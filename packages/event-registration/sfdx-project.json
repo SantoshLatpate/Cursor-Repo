@@ -1,0 +1,18 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true,
+      "package": "EC-EventRegistration",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "postInstallScript": "PostInstallEventReg",
+      "dependencies": [
+        { "package": "EC-Core", "versionNumber": "1.0.0.LATEST" }
+      ]
+    }
+  ],
+  "name": "event-registration",
+  "namespace": "",
+  "sourceApiVersion": "63.0"
+}

@@ -1,0 +1,15 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true,
+      "package": "EC-Core",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "postInstallScript": "PostInstallCore"
+    }
+  ],
+  "name": "core",
+  "namespace": "",
+  "sourceApiVersion": "63.0"
+}

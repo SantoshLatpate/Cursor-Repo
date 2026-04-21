@@ -1,0 +1,17 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true,
+      "package": "EC-GrantApplication",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "dependencies": [
+        { "package": "EC-Core", "versionNumber": "1.0.0.LATEST" }
+      ]
+    }
+  ],
+  "name": "grant-application",
+  "namespace": "",
+  "sourceApiVersion": "63.0"
+}

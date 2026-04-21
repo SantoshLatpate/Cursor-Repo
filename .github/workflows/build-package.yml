@@ -1,0 +1,35 @@
+name: Build Package Version
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+      - name: Authenticate Dev Hub
+        env:
+          DEVHUB_SFDX_URL: ${{ secrets.DEVHUB_SFDX_URL }}
+        run: |
+          printf '%s' "$DEVHUB_SFDX_URL" > ./devhub.sfdx
+          sf org login sfdx-url --sfdx-url-file ./devhub.sfdx --alias DevHub
+      - name: Create Core Package Version
+        env:
+          PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
+        run: cd packages/core && sf package version create --package EC-Core --installation-key "$PACKAGE_KEY" --wait 20 --code-coverage --target-dev-hub DevHub
+      - name: Create EventReg Package Version
+        env:
+          PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
+        run: cd packages/event-registration && sf package version create --package EC-EventRegistration --installation-key "$PACKAGE_KEY" --wait 20 --code-coverage --target-dev-hub DevHub
+      - name: Create Payment Package Version
+        env:
+          PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
+        run: cd packages/payment && sf package version create --package EC-Payment --installation-key "$PACKAGE_KEY" --wait 20 --code-coverage --target-dev-hub DevHub
+      - name: Create GrantApplication Package Version
+        env:
+          PACKAGE_KEY: ${{ secrets.PACKAGE_KEY }}
+        run: cd packages/grant-application && sf package version create --package EC-GrantApplication --installation-key "$PACKAGE_KEY" --wait 20 --code-coverage --target-dev-hub DevHub

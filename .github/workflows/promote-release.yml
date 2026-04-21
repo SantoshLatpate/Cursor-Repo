@@ -1,0 +1,25 @@
+name: Promote Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+      - name: Authenticate Dev Hub
+        env:
+          DEVHUB_SFDX_URL: ${{ secrets.DEVHUB_SFDX_URL }}
+        run: |
+          printf '%s' "$DEVHUB_SFDX_URL" > ./devhub.sfdx
+          sf org login sfdx-url --sfdx-url-file ./devhub.sfdx --alias DevHub
+      - name: Promote versions from manifest
+        run: |
+          [ -f release/package-versions.txt ] || exit 0
+          while IFS= read -r version_id; do
+            [ -n "$version_id" ] && sf package version promote --package "$version_id" --target-dev-hub DevHub --no-prompt
+          done < release/package-versions.txt

@@ -1,0 +1,18 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true,
+      "package": "EC-Payment",
+      "versionName": "ver 1.0",
+      "versionNumber": "1.0.0.NEXT",
+      "postInstallScript": "PostInstallPayment",
+      "dependencies": [
+        { "package": "EC-Core", "versionNumber": "1.0.0.LATEST" }
+      ]
+    }
+  ],
+  "name": "payment",
+  "namespace": "",
+  "sourceApiVersion": "63.0"
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>EC Base Access</label>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Contact.EC_Registration_Status__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Contact.EC_Referral_Source__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Account.EC_Organization_Type__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+</PermissionSet>

@@ -1,0 +1,27 @@
+name: PR Validate
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+      - name: Authenticate Dev Hub
+        env:
+          DEVHUB_SFDX_URL: ${{ secrets.DEVHUB_SFDX_URL }}
+        run: |
+          printf '%s' "$DEVHUB_SFDX_URL" > ./devhub.sfdx
+          sf org login sfdx-url --sfdx-url-file ./devhub.sfdx --alias DevHub
+      - name: Create scratch org
+        run: sf org create scratch --definition-file config/project-scratch-def.json --alias ci-org --duration-days 1 --target-dev-hub DevHub
+      - name: Deploy all packages
+        run: |
+          sf project deploy start --source-dir packages/core/force-app --target-org ci-org --test-level RunLocalTests --wait 30
+          sf project deploy start --source-dir packages/event-registration/force-app --target-org ci-org --test-level RunLocalTests --wait 30
+          sf project deploy start --source-dir packages/payment/force-app --target-org ci-org --test-level RunLocalTests --wait 30
+          sf project deploy start --source-dir packages/grant-application/force-app --target-org ci-org --test-level RunLocalTests --wait 30

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>63.0</apiVersion>
+    <description>Starter draft flow for Waitlist Management.</description>
+    <interviewLabel>Waitlist Management {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Waitlist Management</label>
+    <processType>Flow</processType>
+    <status>Draft</status>
+</Flow>
