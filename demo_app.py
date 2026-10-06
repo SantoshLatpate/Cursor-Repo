@@ -100,27 +100,27 @@ AGENTS = [
     {
         "emoji": "🔭",
         "name": "Company Scout",
-        "job": "Finds small businesses that need freelance work",
+        "job": "Finds businesses that need work",
     },
     {
         "emoji": "🧑‍💻",
         "name": "Talent Scout",
-        "job": "Finds freelancers who can do the work",
+        "job": "Finds freelancers for the jobs",
     },
     {
         "emoji": "🔗",
         "name": "Matching",
-        "job": "Pairs jobs with the right talent",
+        "job": "Pairs jobs with talent",
     },
     {
         "emoji": "✉️",
         "name": "Outreach",
-        "job": "Drafts intro messages to both sides",
+        "job": "Drafts intros to both sides",
     },
     {
         "emoji": "💹",
         "name": "Finance & Analyst",
-        "job": "Tracks fees, AI cost, and profit",
+        "job": "Tracks fees, cost, and profit",
     },
 ]
 
@@ -212,7 +212,7 @@ def draw_agent_cards(holders):
     for i, agent in enumerate(AGENTS):
         status = st.session_state.statuses[agent["name"]]
         with holders[i].container(border=True):
-            st.markdown(f"### {agent['emoji']}  {agent['name']}")
+            st.markdown(f"{agent['emoji']} **{agent['name']}**")
             st.caption(agent["job"])
             status_badge(status)
 
