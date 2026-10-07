@@ -4,6 +4,7 @@
 import streamlit as st
 import anthropic
 
+from agents.finance import report
 from agents.helper import COST_TRACKER, ask_claude
 from agents.mailer import send_email
 from agents.matching import match
@@ -238,3 +239,52 @@ if drafts is not None:
         cost_rows.append({"agent": agent_name, **stats})
     if cost_rows:
         st.table(cost_rows)
+
+st.divider()
+st.header("Test Finance")
+
+if st.button("Run Finance Report"):
+    match_result = st.session_state.get("matches")
+    inner = None
+    if isinstance(match_result, dict):
+        inner = match_result.get("matches")
+    if not inner:
+        st.warning("Run Matching first")
+    else:
+        try:
+            with st.spinner("Building the finance report..."):
+                report(inner, COST_TRACKER)
+        except Exception as e:
+            st.error(str(e))
+
+finance = st.session_state.get("finance")
+if finance:
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Deal Value", f"${finance.get('total_deal_value', 0):,.2f}")
+    m2.metric("Our Fees (10%)", f"${finance.get('total_fees', 0):,.2f}")
+    m3.metric("AI Cost", f"${finance.get('total_ai_cost', 0):,.2f}")
+    m4.metric("Profit", f"${finance.get('profit', 0):,.2f}")
+
+    agent_costs = finance.get("ai_cost_per_agent") or {}
+    if agent_costs:
+        st.bar_chart(agent_costs)
+
+    deal_rows = finance.get("deals") or []
+    if deal_rows:
+        table_rows = [
+            {
+                "company": row.get("company", ""),
+                "freelancer": row.get("freelancer", ""),
+                "deal value": row.get("deal_value_usd", 0),
+                "fee": row.get("fee", 0),
+            }
+            for row in deal_rows
+        ]
+        st.table(table_rows)
+
+    summary = finance.get("summary") or ""
+    advice = finance.get("advice") or ""
+    if summary:
+        st.info(summary)
+    if advice:
+        st.info(advice)
