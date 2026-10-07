@@ -1,7 +1,12 @@
-"""Zero Human Match — Streamlit hackathon demo (sample data only, no APIs)."""
+"""Zero Human Match — Streamlit hackathon demo.
+
+Most pages use sample data. Company Scout can run a real search.
+"""
 
 import time
 import streamlit as st
+
+from agents.company_scout import find_companies
 
 st.set_page_config(page_title="Zero Human Match", page_icon="⚡", layout="wide")
 
@@ -184,6 +189,9 @@ def init_state():
         st.session_state.ran = False
         st.session_state.logs = []
         st.session_state.statuses = {a["name"]: "Idle" for a in AGENTS}
+    # None means we have not run a real search yet (show demo rows)
+    if "company_scout_results" not in st.session_state:
+        st.session_state.company_scout_results = None
 
 
 def banner():
@@ -289,7 +297,60 @@ def page_overview():
 def page_company_scout():
     st.title("Company Scout")
     st.write("Finds small businesses that need freelance work.")
-    st.table(JOBS)
+
+    # Short inputs: where to look, what they need, how many to return
+    col_loc, col_need, col_count = st.columns(3)
+    with col_loc:
+        location = st.text_input("Location", placeholder="San Francisco")
+    with col_need:
+        need = st.text_input("Need", placeholder="new website")
+    with col_count:
+        count = st.number_input("Count", min_value=1, max_value=20, value=5, step=1)
+
+    if st.button("Find companies", type="primary"):
+        if not str(location).strip() or not str(need).strip():
+            st.error("Please type a location and a need first.")
+        else:
+            try:
+                # Calls Querit first, then Claude web search if Querit fails
+                with st.spinner("Searching for real businesses..."):
+                    results = find_companies(
+                        str(location).strip(),
+                        str(need).strip(),
+                        int(count),
+                    )
+                st.session_state.company_scout_results = results
+            except Exception as e:
+                # Missing API key, network error, bad reply, etc.
+                st.error(str(e))
+
+    results = st.session_state.company_scout_results
+    if results is None:
+        # No real search yet — keep the old sample table, labeled as demo
+        st.caption("Sample rows below are demo-only. Click Find companies for a real search.")
+        st.table(JOBS)
+        return
+
+    if not results:
+        st.info("No businesses found. Try another location or need.")
+        return
+
+    # Table includes the Source field on every row
+    st.table(results)
+
+    # Cards make the URL and Source easy to read
+    for biz in results:
+        with st.container(border=True):
+            st.markdown(f"**{biz.get('company', 'Unknown company')}**")
+            st.write(f"Need: {biz.get('need', '')}")
+            st.write(f"Budget: {biz.get('budget', '')}")
+            url = biz.get("url") or ""
+            if url:
+                st.write(url)
+            why = biz.get("why") or ""
+            if why:
+                st.caption(why)
+            st.info(biz.get("source", ""))
 
 
 def page_talent_scout():
