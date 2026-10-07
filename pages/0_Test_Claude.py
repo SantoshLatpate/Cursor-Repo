@@ -5,6 +5,7 @@ import streamlit as st
 import anthropic
 
 from agents.helper import COST_TRACKER, ask_claude
+from agents.talent_scout import find_freelancers
 
 st.title("Test Claude")
 
@@ -55,3 +56,39 @@ if st.button("Test Helper"):
         st.table(rows)
     except Exception as e:
         st.error(str(e))
+
+st.divider()
+st.header("Test Talent Scout")
+
+# Defaults so Santosh can click the button without typing first
+skill = st.text_input("Skill", value="web developer")
+location = st.text_input("Location", value="San Francisco")
+
+if st.button("Find Freelancers"):
+    try:
+        with st.spinner("Finding freelancers..."):
+            find_freelancers(skill, location)
+    except Exception as e:
+        st.error(str(e))
+
+people = st.session_state.get("freelancers")
+if people is not None:
+    if people:
+        # LinkColumn makes profile_url clickable (a plain table cannot)
+        st.dataframe(
+            people,
+            column_config={
+                "profile_url": st.column_config.LinkColumn("profile_url"),
+            },
+            hide_index=True,
+            use_container_width=True,
+        )
+    else:
+        st.info("No freelancers found.")
+
+    # Cost of the Talent Scout Claude call (and any earlier helper calls)
+    cost_rows = []
+    for agent_name, stats in COST_TRACKER.items():
+        cost_rows.append({"agent": agent_name, **stats})
+    if cost_rows:
+        st.table(cost_rows)
