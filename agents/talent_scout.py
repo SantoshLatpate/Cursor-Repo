@@ -60,6 +60,7 @@ def find_freelancers(skill, location, count=5):
         if not row.get("source"):
             row["source"] = "GitHub"
 
+    # Matching Agent reads this key later
     st.session_state["freelancers"] = freelancers
     return freelancers
 

@@ -25,7 +25,7 @@ def find_companies(location, need, count=5):
 
     Tries Querit search first. If the Querit key is missing or Querit fails,
     falls back to Claude's built-in web search.
-    Returns a list of dicts (company, need, budget, url, why, source).
+    Saves the list in st.session_state["companies"] and returns it.
     """
     try:
         hits = _search_querit(location, need)
@@ -34,11 +34,15 @@ def find_companies(location, need, count=5):
         businesses = _pick_with_claude(location, need, count, hits, use_web_search=False)
         if not businesses:
             raise RuntimeError("Claude returned no businesses from Querit hits")
-        return _add_source(businesses, SOURCE_QUERIT)
+        businesses = _add_source(businesses, SOURCE_QUERIT)
     except Exception:
         # Missing key, missing package, network error, empty results, etc.
         businesses = _pick_with_claude(location, need, count, hits=None, use_web_search=True)
-        return _add_source(businesses, SOURCE_CLAUDE_WEB)
+        businesses = _add_source(businesses, SOURCE_CLAUDE_WEB)
+
+    # Matching Agent reads this key later
+    st.session_state["companies"] = businesses
+    return businesses
 
 
 def _search_querit(location, need):
