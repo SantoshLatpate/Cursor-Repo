@@ -6,6 +6,7 @@ import anthropic
 
 from agents.helper import COST_TRACKER, ask_claude
 from agents.matching import match
+from agents.outreach import write_messages
 from agents.talent_scout import find_freelancers
 
 st.title("Test Claude")
@@ -146,6 +147,59 @@ if result is not None:
         st.table(rejected)
     else:
         st.info("No rejected pairs.")
+
+    cost_rows = []
+    for agent_name, stats in COST_TRACKER.items():
+        cost_rows.append({"agent": agent_name, **stats})
+    if cost_rows:
+        st.table(cost_rows)
+
+st.divider()
+st.header("Test Outreach")
+
+if st.button("Write Messages"):
+    try:
+        with st.spinner("Writing draft emails..."):
+            # Matching saves {"matches": [...], "rejected": [...]}; we want the inner list
+            match_result = st.session_state.get("matches")
+            inner = None
+            if isinstance(match_result, dict):
+                inner = match_result.get("matches")
+            write_messages(inner)
+    except Exception as e:
+        st.error(str(e))
+
+drafts = st.session_state.get("outreach")
+if drafts is not None:
+    if not drafts:
+        st.info("No drafts.")
+    for i, draft in enumerate(drafts):
+        company = draft.get("company", "company")
+        freelancer = draft.get("freelancer", "freelancer")
+        score = draft.get("score", "")
+        title = f"{company} ↔ {freelancer} ({score})"
+        with st.expander(title):
+            st.markdown("**To the company**")
+            st.write(draft.get("company_subject", ""))
+            st.write(draft.get("company_body", ""))
+            st.markdown("**To the freelancer**")
+            st.write(draft.get("freelancer_subject", ""))
+            st.write(draft.get("freelancer_body", ""))
+
+            col_ok, col_no = st.columns(2)
+            if col_ok.button("Approve", key=f"outreach_approve_{i}"):
+                st.session_state["outreach"][i]["status"] = "Approved"
+            if col_no.button("Reject", key=f"outreach_reject_{i}"):
+                st.session_state["outreach"][i]["status"] = "Rejected"
+
+            # Colored label: green / red / blue for draft
+            status = st.session_state["outreach"][i].get("status", "")
+            if status == "Approved":
+                st.success(status)
+            elif status == "Rejected":
+                st.error(status)
+            else:
+                st.info(status)
 
     cost_rows = []
     for agent_name, stats in COST_TRACKER.items():
