@@ -225,12 +225,13 @@ if drafts is not None:
                             st.session_state["outreach"][i]["status"] = "Sent (test)"
                             st.success("Sent (test)")
                         else:
+                            # Show each unique error once (both sends often fail the same way)
                             problems = []
-                            if to_company is not True:
-                                problems.append(str(to_company))
-                            if to_freelancer is not True:
-                                problems.append(str(to_freelancer))
-                            st.error(" ".join(problems))
+                            for result in (to_company, to_freelancer):
+                                if result is not True and str(result) not in problems:
+                                    problems.append(str(result))
+                            for problem in problems:
+                                st.error(problem)
 
     cost_rows = []
     for agent_name, stats in COST_TRACKER.items():
