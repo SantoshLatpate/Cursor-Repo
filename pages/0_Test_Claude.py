@@ -5,6 +5,7 @@ import streamlit as st
 import anthropic
 
 from agents.helper import COST_TRACKER, ask_claude
+from agents.mailer import send_email
 from agents.matching import match
 from agents.outreach import write_messages
 from agents.talent_scout import find_freelancers
@@ -196,10 +197,40 @@ if drafts is not None:
             status = st.session_state["outreach"][i].get("status", "")
             if status == "Approved":
                 st.success(status)
+            elif status == "Sent (test)":
+                st.success(status)
             elif status == "Rejected":
                 st.error(status)
             else:
                 st.info(status)
+
+            # Only Approved drafts can be sent, and only when Santosh clicks
+            if status == "Approved":
+                if st.button("Send (test)", key=f"outreach_send_{i}"):
+                    try:
+                        to_company = send_email(
+                            draft.get("company_subject", ""),
+                            draft.get("company_body", ""),
+                            intended_for=draft.get("company", "company"),
+                        )
+                        to_freelancer = send_email(
+                            draft.get("freelancer_subject", ""),
+                            draft.get("freelancer_body", ""),
+                            intended_for=draft.get("freelancer", "freelancer"),
+                        )
+                    except Exception as e:
+                        st.error(str(e))
+                    else:
+                        if to_company is True and to_freelancer is True:
+                            st.session_state["outreach"][i]["status"] = "Sent (test)"
+                            st.success("Sent (test)")
+                        else:
+                            problems = []
+                            if to_company is not True:
+                                problems.append(str(to_company))
+                            if to_freelancer is not True:
+                                problems.append(str(to_freelancer))
+                            st.error(" ".join(problems))
 
     cost_rows = []
     for agent_name, stats in COST_TRACKER.items():
