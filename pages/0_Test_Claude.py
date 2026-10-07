@@ -5,6 +5,7 @@ import streamlit as st
 import anthropic
 
 from agents.helper import COST_TRACKER, ask_claude
+from agents.matching import match
 from agents.talent_scout import find_freelancers
 
 st.title("Test Claude")
@@ -87,6 +88,65 @@ if people is not None:
         st.info("No freelancers found.")
 
     # Cost of the Talent Scout Claude call (and any earlier helper calls)
+    cost_rows = []
+    for agent_name, stats in COST_TRACKER.items():
+        cost_rows.append({"agent": agent_name, **stats})
+    if cost_rows:
+        st.table(cost_rows)
+
+st.divider()
+st.header("Test Matching")
+
+if st.button("Match Now"):
+    try:
+        with st.spinner("Matching companies and freelancers..."):
+            match(
+                st.session_state.get("companies"),
+                st.session_state.get("freelancers"),
+            )
+    except Exception as e:
+        st.error(str(e))
+
+result = st.session_state.get("matches")
+if result is not None:
+    matches = result.get("matches") or []
+    rejected = result.get("rejected") or []
+
+    if matches:
+        # ProgressColumn draws score as a 0-100 bar
+        match_rows = []
+        for row in matches:
+            item = dict(row)
+            try:
+                item["score"] = int(item.get("score") or 0)
+            except (TypeError, ValueError):
+                item["score"] = 0
+            if isinstance(item.get("reasons"), list):
+                item["reasons"] = "; ".join(str(r) for r in item["reasons"])
+            match_rows.append(item)
+        st.dataframe(
+            match_rows,
+            column_config={
+                "score": st.column_config.ProgressColumn(
+                    "score",
+                    min_value=0,
+                    max_value=100,
+                    format="%d",
+                ),
+                "profile_url": st.column_config.LinkColumn("profile_url"),
+            },
+            hide_index=True,
+            use_container_width=True,
+        )
+    else:
+        st.info("No matches.")
+
+    st.subheader("Rejected pairs")
+    if rejected:
+        st.table(rejected)
+    else:
+        st.info("No rejected pairs.")
+
     cost_rows = []
     for agent_name, stats in COST_TRACKER.items():
         cost_rows.append({"agent": agent_name, **stats})
