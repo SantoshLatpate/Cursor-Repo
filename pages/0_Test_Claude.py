@@ -4,6 +4,8 @@
 import streamlit as st
 import anthropic
 
+from agents.helper import COST_TRACKER, ask_claude
+
 st.title("Test Claude")
 
 # A button the user clicks to send a short prompt to Claude
@@ -34,4 +36,22 @@ if st.button("Test Claude"):
         st.write(f"Output tokens: {message.usage.output_tokens}")
     except Exception as e:
         # Show any problem (missing key, network error, bad model name, etc.)
+        st.error(str(e))
+
+# Same hello prompt, but through the shared helper (tracks cost per agent)
+if st.button("Test Helper"):
+    try:
+        reply = ask_claude(
+            "Tester",
+            "You are friendly.",
+            "Say hello in one sentence",
+        )
+        st.write(reply)
+
+        # Show one row per agent with tokens, calls, and dollars
+        rows = []
+        for agent_name, stats in COST_TRACKER.items():
+            rows.append({"agent": agent_name, **stats})
+        st.table(rows)
+    except Exception as e:
         st.error(str(e))
